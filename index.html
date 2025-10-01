@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PM SHRI Kendriya Vidyalaya Barrackpore (AFS) Feedback Portal</title>
+    <title>Class Voice - Student Feedback Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -95,6 +95,91 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
         
+        /* Parent Company Styling */
+        .parent-company {
+            margin-top: 15px;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        
+        .powered-by {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .company-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        
+        /* Light mode footer UNI visibility */
+        @media (prefers-color-scheme: light) {
+            .company-name {
+                background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            
+            .company-tagline {
+                color: rgba(0, 0, 0, 0.7) !important;
+            }
+            
+            .powered-by {
+                color: rgba(0, 0, 0, 0.6) !important;
+            }
+        }
+        
+        .company-tagline {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            font-style: italic;
+            letter-spacing: 0.3px;
+        }
+        
+        /* Hover effect for company branding */
+        .parent-company .company-name {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .parent-company .company-tagline {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        @media (max-width: 768px) {
+            .company-name {
+                font-size: 1.2rem;
+                letter-spacing: 1.5px;
+            }
+            
+            .company-tagline {
+                font-size: 0.75rem;
+            }
+            
+            .powered-by {
+                font-size: 0.7rem;
+            }
+        }
+        
         /* School Header Styling */
         .school-header {
             text-align: center;
@@ -105,6 +190,101 @@
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation Subtitle for UNI */
+        .nav-subtitle {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            margin-left: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        /* Light mode navigation UNI visibility */
+        @media (prefers-color-scheme: light) {
+            .nav-subtitle {
+                color: rgba(0, 0, 0, 0.8) !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+        }
+        
+        /* UNI Header Styling */
+        .uni-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            margin-top: -20px;
+        }
+        
+        .uni-logo {
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.277);
+        }
+        
+        /* Light mode UNI visibility */
+        @media (prefers-color-scheme: light) {
+            .uni-logo {
+                background: linear-gradient(135deg, #204ad3 0%, #6613f7 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            
+            .uni-tagline {
+                color: rgba(0, 0, 0, 0.879) !important;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+        }
+        
+        .uni-tagline {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            font-style: italic;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        @media (max-width: 768px) {
+            .uni-logo {
+                font-size: 2.2rem;
+                letter-spacing: 6px;
+            }
+            
+            .uni-tagline {
+                font-size: 0.85rem;
+                letter-spacing: 1.5px;
+            }
+            
+            .uni-header {
+                margin-bottom: 10px;
+                padding: 6px 0;
+                margin-top: -55px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .uni-logo {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+            }
+            
+            .uni-tagline {
+                font-size: 0.75rem;
+                letter-spacing: 1px;
+            }
         }
         
         .school-name {
@@ -156,7 +336,8 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="nav-title">PM SHRI KV BARRACKPORE (AFS)</span>
+                <span class="nav-title">CLASS VOICE</span>
+                <span class="nav-subtitle">by UNI</span>
             </div>
             <div class="nav-menu">
                 <a href="index.html" class="nav-link active">Home</a>
@@ -169,10 +350,16 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
+                <!-- UNI Parent Company Banner -->
+                <div class="uni-header fade-in">
+                    <span class="uni-logo">UNI</span>
+                    <span class="uni-tagline">Unified Intelligence</span>
+                </div>
+                
                 <!-- School Name Section -->
                 <div class="school-header fade-in">
-                    <h2 class="school-name">PM SHRI Kendriya Vidyalaya</h2>
-                    <p class="school-location">Barrackpore (AFS)</p>
+                    <h2 class="school-name">Class Voice</h2>
+                    <p class="school-location">Student Feedback Portal</p>
                 </div>
                 
                 <h1 class="hero-title fade-in">
@@ -319,8 +506,13 @@
             <div class="footer-content">
                 <div class="footer-left">
                     <div class="footer-school-info">
-                        <h3>PM SHRI Kendriya Vidyalaya</h3>
-                        <p>Barrackpore (AFS)</p>
+                        <h3>Class Voice</h3>
+                        <p>Student Feedback Portal</p>
+                        <div class="parent-company">
+                            <span class="powered-by">Powered by</span>
+                            <span class="company-name">UNI</span>
+                            <span class="company-tagline">Unified Intelligence</span>
+                        </div>
                     </div>
                     <p class="footer-description">
                         Fostering excellence in education through open communication and continuous improvement.
@@ -331,18 +523,18 @@
                         <h4>Contact Information</h4>
                         <div class="contact-item">
                             <span class="contact-icon">📧</span>
-                            <span>feedback.kvbarrackpore.edu.in@gmail.com</span>
+                            <span>feedback@classvoice.edu</span>
                         </div>
                         <div class="contact-item">
                             <span class="contact-icon">📍</span>
-                            <span>Barrackpore Air Force Station, West Bengal</span>
+                            <span>Educational Feedback Platform</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 PM SHRI Kendriya Vidyalaya Barrackpore (AFS). All rights reserved.</p>
-                <p class="credits">Made for PM SHRI KV Barrackpore (AFS)</p>
+                <p>&copy; 2025 Class Voice by UNI (Unified Intelligence). All rights reserved.</p>
+                <p class="credits">Educational Technology Solutions</p>
             </div>
         </div>
     </footer>
