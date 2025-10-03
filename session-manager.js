@@ -18,26 +18,29 @@ const SessionManager = {
     
     // Check if user is currently logged in
     isLoggedIn() {
-        const username = sessionStorage.getItem(SESSION_CONFIG.userKey);
-        const sessionToken = sessionStorage.getItem(SESSION_CONFIG.sessionKey);
+        const username = sessionStorage.getItem(SESSION_CONFIG.userKey) || localStorage.getItem(SESSION_CONFIG.userKey);
+        const sessionToken = sessionStorage.getItem(SESSION_CONFIG.sessionKey) || localStorage.getItem(SESSION_CONFIG.sessionKey);
         return !!(username && username !== 'Guest');
     },
     
     // Get current user information
     getCurrentUser() {
         return {
-            username: sessionStorage.getItem(SESSION_CONFIG.userKey),
-            sessionToken: sessionStorage.getItem(SESSION_CONFIG.sessionKey)
+            username: sessionStorage.getItem(SESSION_CONFIG.userKey) || localStorage.getItem(SESSION_CONFIG.userKey),
+            sessionToken: sessionStorage.getItem(SESSION_CONFIG.sessionKey) || localStorage.getItem(SESSION_CONFIG.sessionKey)
         };
     },
     
     // Store user session after successful login
     setUserSession(username, sessionToken = null) {
+        // Persist in both sessionStorage and localStorage
         sessionStorage.setItem(SESSION_CONFIG.userKey, username);
+        localStorage.setItem(SESSION_CONFIG.userKey, username);
         if (sessionToken) {
             sessionStorage.setItem(SESSION_CONFIG.sessionKey, sessionToken);
+            localStorage.setItem(SESSION_CONFIG.sessionKey, sessionToken);
         }
-        console.log('✅ User session stored:', username);
+        console.log('✅ User session stored (persistent):', username);
     },
     
     // Track last visited page for return visits
@@ -49,28 +52,36 @@ const SessionManager = {
         const protectedPages = ['dashboard.html', 'feedbacks.html', 'my-feedbacks.html', 'post-feedback.html', 'post-anonymous.html'];
         
         if (protectedPages.includes(currentPage)) {
+            // Persist in both storages
             sessionStorage.setItem(SESSION_CONFIG.lastPageKey, currentPage);
-            console.log('📍 Last visited page stored:', currentPage);
+            localStorage.setItem(SESSION_CONFIG.lastPageKey, currentPage);
+            console.log('📍 Last visited page stored (persistent):', currentPage);
         }
     },
     
     // Get last visited page
     getLastVisitedPage() {
-        return sessionStorage.getItem(SESSION_CONFIG.lastPageKey);
+        return sessionStorage.getItem(SESSION_CONFIG.lastPageKey) || localStorage.getItem(SESSION_CONFIG.lastPageKey);
     },
     
     // Clear last visited page
     clearLastVisitedPage() {
         sessionStorage.removeItem(SESSION_CONFIG.lastPageKey);
+        localStorage.removeItem(SESSION_CONFIG.lastPageKey);
     },
     
     // Clear user session (logout)
     clearSession() {
+        // Clear from both storages
         sessionStorage.removeItem(SESSION_CONFIG.userKey);
+        localStorage.removeItem(SESSION_CONFIG.userKey);
         sessionStorage.removeItem(SESSION_CONFIG.sessionKey);
+        localStorage.removeItem(SESSION_CONFIG.sessionKey);
         sessionStorage.removeItem(SESSION_CONFIG.redirectKey);
         sessionStorage.removeItem(SESSION_CONFIG.lastPageKey);
+        localStorage.removeItem(SESSION_CONFIG.lastPageKey);
         sessionStorage.removeItem('loginRedirect');
+        localStorage.removeItem('loginRedirect');
         localStorage.removeItem('feedbackCooldownEnd');
         console.log('🚪 User session cleared');
     },
@@ -233,6 +244,21 @@ const SessionManager = {
 // Auto-initialize session management when script loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔄 Initializing session management...');
+    
+    // Sync persistent session into sessionStorage for compatibility
+    const persistedUser = localStorage.getItem(SESSION_CONFIG.userKey);
+    const persistedToken = localStorage.getItem(SESSION_CONFIG.sessionKey);
+    const persistedLastPage = localStorage.getItem(SESSION_CONFIG.lastPageKey);
+    
+    if (persistedUser && !sessionStorage.getItem(SESSION_CONFIG.userKey)) {
+        sessionStorage.setItem(SESSION_CONFIG.userKey, persistedUser);
+    }
+    if (persistedToken && !sessionStorage.getItem(SESSION_CONFIG.sessionKey)) {
+        sessionStorage.setItem(SESSION_CONFIG.sessionKey, persistedToken);
+    }
+    if (persistedLastPage && !sessionStorage.getItem(SESSION_CONFIG.lastPageKey)) {
+        sessionStorage.setItem(SESSION_CONFIG.lastPageKey, persistedLastPage);
+    }
     
     // Only run auth check after a short delay to allow other scripts to load
     setTimeout(() => {
