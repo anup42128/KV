@@ -259,6 +259,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (persistedLastPage && !sessionStorage.getItem(SESSION_CONFIG.lastPageKey)) {
         sessionStorage.setItem(SESSION_CONFIG.lastPageKey, persistedLastPage);
     }
+
+    // Simple client-side protections: disable right-click and common view-source/devtools shortcuts
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('keydown', function(e) {
+        // Block F12 (DevTools)
+        if (e.keyCode === 123) {
+            e.preventDefault();
+        }
+        // Block Ctrl+Shift+I/J/C (DevTools shortcuts)
+        if (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) {
+            e.preventDefault();
+        }
+        // Block Ctrl+U (View Source)
+        if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+            e.preventDefault();
+        }
+    });
     
     // Only run auth check after a short delay to allow other scripts to load
     setTimeout(() => {
