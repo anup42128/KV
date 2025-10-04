@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Complaint - Class Voice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Page layout */
+        .complaint-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 90px 20px 40px 20px;
+            min-height: 100vh;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 25px;
+        }
+
+        .complaint-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .complaint-label {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .complaint-textarea {
+            width: 100%;
+            min-height: 240px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 18px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--white);
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .complaint-textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .complaint-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 400;
+        }
+
+        .complaint-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.6);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: rgba(76, 175, 80, 0.4);
+            border-color: rgba(76, 175, 80, 0.7);
+        }
+
+        /* Top-right quick nav */
+        .top-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        .nav-link-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .nav-link-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Custom message */
+        .custom-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        .custom-message.success { background: rgba(46, 213, 115, 0.2); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); }
+        .custom-message.error { background: rgba(255, 71, 87, 0.2); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); }
+        .custom-message.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 768px) {
+            .complaint-container { padding: 80px 15px 30px 15px; }
+            .page-title { font-size: 1.6rem; }
+            .complaint-textarea { min-height: 200px; padding: 15px; font-size: 1rem; }
+            .nav-link-btn { padding: 7px 12px; font-size: 0.8rem; }
+            .top-nav { top: 70px; left: 10px; right: auto; }
+        }
+    </style>
+    <style>
+        .why-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1001; }
+        .why-content { background: rgba(30,30,40,0.95); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 20px; max-width: 620px; width: 90%; color: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; }
+        .why-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
+        .why-text { font-size: 0.95rem; color: rgba(255,255,255,0.85); line-height: 1.6; }
+        .why-close { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: rgba(255,255,255,0.8); font-size: 1.6rem; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .why-close:hover { background: rgba(255,255,255,0.1); }
+        @media (max-width: 768px) { .why-title { font-size: 1.2rem; } .why-text { font-size: 0.9rem; } }
+    </style>
+</head>
+<body>
+    <!-- Animated Background Elements -->
+    <div class="bg-animation">
+        <div class="floating-shape shape1"></div>
+        <div class="floating-shape shape2"></div>
+        <div class="floating-shape shape3"></div>
+        <div class="floating-shape shape4"></div>
+        <div class="floating-shape shape5"></div>
+    </div>
+
+    <!-- Fixed nav -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="nav-title">CLASS VOICE</span>
+            </div>
+            <div class="nav-menu">
+                <a href="feedbacks.html" class="nav-link nav-link-btn"><span class="btn-icon">🔙</span><span class="btn-text">Back</span></a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Page content -->
+    <main class="complaint-container">
+        <h1 class="page-title">Anonymous Complaint Box</h1>
+        <p class="page-subtitle">Share serious concerns anonymously. Only admins can access complaints in the database. No names are stored.</p>
+        <div class="notice-actions" style="text-align:center; margin-top:10px;">
+            <button class="nav-link-btn" id="openWhyBtn"><span>❓</span><span>Why?</span></button>
+        </div>
+
+        <div id="customMessage" class="custom-message"></div>
+
+        <!-- Why modal -->
+        <div id="whyModal" class="why-modal">
+            <div class="why-content">
+                <button class="why-close" id="closeWhyBtn" aria-label="Close">&times;</button>
+                <h2 class="why-title">Why does this exist?</h2>
+                <p class="why-text">Some students can’t share certain problems directly with teachers. This anonymous complaint box lets you report sensitive issues without revealing your name. Your complaint is stored privately and only admins can view it. We will take these concerns to teachers without your identity.</p>
+            </div>
+        </div>
+
+        <div class="complaint-card">
+            <label for="complaintText" class="complaint-label">Your Complaint</label>
+            <textarea id="complaintText" class="complaint-textarea" placeholder="Write your complaint here..." maxlength="4000"></textarea>
+            <div class="complaint-actions">
+                <button id="submitComplaintBtn" class="action-btn submit-btn">
+                    <span>📨</span>
+                    <span>Submit Complaint</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Session Management (site-wide protections + auth handling) -->
+    <script src="session-manager.js"></script>
+    <!-- Supabase Configuration -->
+    <script src="supabase-config.js"></script>
+
+    <script>
+        function showMessage(text, type = 'success') {
+            const el = document.getElementById('customMessage');
+            el.textContent = text;
+            el.className = `custom-message ${type} show`;
+            setTimeout(() => { el.className = `custom-message ${type}`; }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('submitComplaintBtn');
+            const textarea = document.getElementById('complaintText');
+            const openWhy = document.getElementById('openWhyBtn');
+            const closeWhy = document.getElementById('closeWhyBtn');
+            const whyModal = document.getElementById('whyModal');
+
+            if (openWhy && whyModal) {
+                openWhy.addEventListener('click', () => { whyModal.style.display = 'flex'; });
+            }
+            if (closeWhy && whyModal) {
+                closeWhy.addEventListener('click', () => { whyModal.style.display = 'none'; });
+            }
+            if (whyModal) {
+                whyModal.addEventListener('click', (e) => { if (e.target === whyModal) whyModal.style.display = 'none'; });
+                document.addEventListener('keydown', (e) => { if (e.key === 'Escape') whyModal.style.display = 'none'; });
+            }
+
+            btn.addEventListener('click', async () => {
+                const text = textarea.value.trim();
+                if (!text) {
+                    showMessage('Please write your complaint before submitting.', 'error');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+
+                try {
+                    // Ensure supabase is initialized
+                    if (typeof initializeSupabase === 'function') {
+                        initializeSupabase();
+                    }
+
+                    if (window.DatabaseHelper && window.DatabaseHelper.submitComplaint) {
+                        const result = await window.DatabaseHelper.submitComplaint(text);
+                        if (result.success) {
+                            showMessage('Complaint submitted anonymously. Thank you.', 'success');
+                            textarea.value = '';
+                        } else {
+                            showMessage(result.error || 'Failed to submit complaint', 'error');
+                        }
+                    } else {
+                        // Direct insert fallback
+                        const { data, error } = await window.supabase
+                            .from('anonymous_complaints')
+                            .insert([{ complaint_text: text }]);
+                        if (error) throw error;
+                        showMessage('Complaint submitted anonymously. Thank you.', 'success');
+                        textarea.value = '';
+                    }
+                } catch (e) {
+                    console.error('Complaint submission error:', e);
+                    showMessage('An error occurred. Please try again.', 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.style.opacity = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
