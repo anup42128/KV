@@ -513,6 +513,35 @@ const DatabaseHelper = {
             console.error('❌ Error reporting feedback:', error);
             return { success: false, error: error.message };
         }
+    },
+
+    // Submit anonymous complaint
+    async submitComplaint(complaintText) {
+        try {
+            console.log('📝 Submitting anonymous complaint...');
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized');
+                return { success: false, error: 'Database not ready' };
+            }
+            const { data, error } = await supabase
+                .from('anonymous_complaints')
+                .insert([
+                    {
+                        complaint_text: complaintText
+                    }
+                ]);
+            
+            if (error) {
+                console.error('❌ Complaint submission failed:', error);
+                return { success: false, error: error.message };
+            }
+            
+            console.log('✅ Complaint submitted successfully');
+            return { success: true, data, message: 'Complaint submitted anonymously!' };
+        } catch (error) {
+            console.error('❌ Complaint submission error:', error);
+            return { success: false, error: 'Failed to submit complaint' };
+        }
     }
 };
 
