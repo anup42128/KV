@@ -963,6 +963,13 @@
                         <div class="option-description">Your identity will remain hidden</div>
                     </div>
                 </button>
+                <button class="option-btn" onclick="openComplaint()">
+                    <div class="option-icon">📨</div>
+                    <div class="option-content">
+                        <div class="option-title">Submit Anonymous Complaint</div>
+                        <div class="option-description">Private complaint stored anonymously; only admins can view.</div>
+                    </div>
+                </button>
             </div>
         </div>
     </div>
@@ -1233,6 +1240,12 @@
             
             // Redirect to post-anonymous page
             window.location.href = `post-anonymous.html?username=${encodeURIComponent(username)}`;
+        }
+
+        // Open anonymous complaint page
+        function openComplaint() {
+            closePostOptions();
+            window.location.href = 'complaint.html';
         }
 
         // Close modal when clicking outside
