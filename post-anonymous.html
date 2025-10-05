@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,7 +27,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 100;
+            z-index: 1100;
         }
 
         .show-all-btn {
@@ -49,6 +49,8 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
+            pointer-events: auto;
+            user-select: none;
         }
 
         .show-all-btn:hover {
@@ -203,6 +205,7 @@
             width: 90%;
             max-width: 500px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
         }
 
         .custom-message.success {
