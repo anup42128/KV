@@ -15,11 +15,28 @@
             position: relative;
             display: flex;
             align-items: center;
+            width: 100%;
         }
         
         .password-input-container .form-input {
             padding-right: 50px;
             flex: 1;
+            width: 100%;
+        }
+        
+        /* Ensure form-group maintains consistent layout */
+        .form-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        /* Error message styling that doesn't affect input layout */
+        .error-message {
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            z-index: 1;
         }
         
         .password-toggle {
