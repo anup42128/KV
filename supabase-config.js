@@ -404,19 +404,22 @@ const DatabaseHelper = {
         }
     },
 
-    // Get all feedbacks (not just today's)
-    async getAllFeedbacks() {
+    // Get all feedbacks with comment counts (optimized)
+    async getAllFeedbacksWithComments() {
         try {
-            console.log('📚 Fetching all feedbacks...');
+            console.log('📚 Fetching all feedbacks with comment counts...');
             
             const { data, error } = await supabase
                 .from('feedback_submissions')
-                .select('*')
+                .select(`
+                    *,
+                    comment_count:feedback_comments(count)
+                `)
                 .order('created_at', { ascending: false })
-                .limit(50);  // Get last 50 feedbacks
+                .limit(50);
             
             if (error) {
-                console.error('❌ Failed to fetch feedbacks:', error);
+                console.error('❌ Failed to fetch feedbacks with comments:', error);
                 return {
                     success: false,
                     error: error.message,
@@ -424,14 +427,20 @@ const DatabaseHelper = {
                 };
             }
             
-            console.log(`✅ Fetched ${data ? data.length : 0} feedbacks`);
+            // Process the data to include comment counts
+            const processedFeedbacks = data?.map(feedback => ({
+                ...feedback,
+                comment_count: feedback.comment_count?.[0]?.count || 0
+            })) || [];
+            
+            console.log(`✅ Fetched ${processedFeedbacks.length} feedbacks with comment counts`);
             return {
                 success: true,
-                feedbacks: data || []
+                feedbacks: processedFeedbacks
             };
             
         } catch (error) {
-            console.error('❌ Error fetching feedbacks:', error);
+            console.error('❌ Error fetching feedbacks with comments:', error);
             return {
                 success: false,
                 error: 'Failed to load feedbacks',
@@ -541,6 +550,248 @@ const DatabaseHelper = {
         } catch (error) {
             console.error('❌ Complaint submission error:', error);
             return { success: false, error: 'Failed to submit complaint' };
+        }
+    },
+
+    // ============================================
+    // COMMENT SYSTEM FUNCTIONS
+    // ============================================
+
+    // Submit a comment to a feedback
+    async submitComment(commentData) {
+        try {
+            console.log('💬 Submitting comment...');
+            
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized');
+                return { success: false, error: 'Database not ready' };
+            }
+
+            const { data, error } = await supabase
+                .from('feedback_comments')
+                .insert([
+                    {
+                        feedback_id: commentData.feedbackId,
+                        username: commentData.username,
+                        comment_text: commentData.text,
+                        is_anonymous: commentData.isAnonymous,
+                        character_count: commentData.text.length
+                    }
+                ])
+                .select()
+                .single();
+            
+            if (error) {
+                console.error('❌ Comment submission failed:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+            
+            console.log('✅ Comment submitted successfully');
+            return {
+                success: true,
+                data: data,
+                message: 'Comment posted successfully!'
+            };
+            
+        } catch (error) {
+            console.error('❌ Comment submission error:', error);
+            return {
+                success: false,
+                error: 'Failed to submit comment'
+            };
+        }
+    },
+
+    // Get comments for a specific feedback
+    async getCommentsForFeedback(feedbackId) {
+        try {
+            console.log(`💬 Fetching comments for feedback: ${feedbackId}`);
+            
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized');
+                return { success: false, error: 'Database not ready', comments: [] };
+            }
+
+            const { data, error } = await supabase
+                .from('feedback_comments')
+                .select('*')
+                .eq('feedback_id', feedbackId)
+                .eq('is_approved', true)
+                .order('created_at', { ascending: true });
+            
+            if (error) {
+                console.error('❌ Failed to fetch comments:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    comments: []
+                };
+            }
+            
+            console.log(`✅ Fetched ${data ? data.length : 0} comments`);
+            return {
+                success: true,
+                comments: data || []
+            };
+            
+        } catch (error) {
+            console.error('❌ Error fetching comments:', error);
+            return {
+                success: false,
+                error: 'Failed to load comments',
+                comments: []
+            };
+        }
+    },
+
+    // Get comment count for a specific feedback
+    async getCommentCount(feedbackId) {
+        try {
+            const { count, error } = await supabase
+                .from('feedback_comments')
+                .select('*', { count: 'exact', head: true })
+                .eq('feedback_id', feedbackId)
+                .eq('is_approved', true);
+            
+            if (error) {
+                console.error('❌ Failed to get comment count:', error);
+                return 0;
+            }
+            
+            return count || 0;
+            
+        } catch (error) {
+            console.error('❌ Error getting comment count:', error);
+            return 0;
+        }
+    },
+
+    // Report a comment
+    async reportComment(commentId) {
+        try {
+            console.log('🚩 Reporting comment...');
+            
+            // First get current report count
+            const { data: comment, error: fetchError } = await supabase
+                .from('feedback_comments')
+                .select('report_count')
+                .eq('id', commentId)
+                .single();
+            
+            if (fetchError) {
+                throw fetchError;
+            }
+            
+            // Update report count and flag
+            const newReportCount = (comment.report_count || 0) + 1;
+            const { error: updateError } = await supabase
+                .from('feedback_comments')
+                .update({
+                    report_count: newReportCount,
+                    is_reported: true
+                })
+                .eq('id', commentId);
+            
+            if (updateError) {
+                throw updateError;
+            }
+            
+            console.log('✅ Comment reported successfully');
+            return { success: true, message: 'Comment reported successfully' };
+            
+        } catch (error) {
+            console.error('❌ Error reporting comment:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    // Get all comments for a user
+    async getUserComments(username) {
+        try {
+            console.log(`💬 Fetching comments for user: ${username}`);
+            
+            const { data, error } = await supabase
+                .from('feedback_comments')
+                .select(`
+                    *,
+                    feedback_submissions:feedback_id (
+                        id,
+                        feedback_text,
+                        username,
+                        created_at
+                    )
+                `)
+                .eq('username', username)
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('❌ Failed to fetch user comments:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    comments: []
+                };
+            }
+            
+            console.log(`✅ Fetched ${data ? data.length : 0} comments for user ${username}`);
+            return {
+                success: true,
+                comments: data || []
+            };
+            
+        } catch (error) {
+            console.error('❌ Error fetching user comments:', error);
+            return {
+                success: false,
+                error: 'Failed to load user comments',
+                comments: []
+            };
+        }
+    },
+
+    // Delete a comment (only by the author)
+    async deleteComment(commentId, username) {
+        try {
+            console.log('🗑️ Deleting comment...');
+            
+            // First verify the comment belongs to the user
+            const { data: comment, error: fetchError } = await supabase
+                .from('feedback_comments')
+                .select('username, comment_text')
+                .eq('id', commentId)
+                .single();
+            
+            if (fetchError) {
+                console.error('❌ Error fetching comment for deletion:', fetchError);
+                return { success: false, error: 'Comment not found' };
+            }
+            
+            // Check if user owns the comment
+            if (comment.username !== username) {
+                console.error('❌ User does not own this comment');
+                return { success: false, error: 'You can only delete your own comments' };
+            }
+            
+            // Delete the comment
+            const { error } = await supabase
+                .from('feedback_comments')
+                .delete()
+                .eq('id', commentId);
+            
+            if (error) {
+                console.error('❌ Error deleting comment:', error);
+                return { success: false, error: error.message };
+            }
+            
+            console.log('✅ Comment deleted successfully');
+            return { success: true, message: 'Comment deleted successfully' };
+            
+        } catch (error) {
+            console.error('❌ Error deleting comment:', error);
+            return { success: false, error: error.message };
         }
     }
 };
