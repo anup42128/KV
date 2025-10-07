@@ -906,9 +906,522 @@
             font-size: 1rem;
             line-height: 1.6;
         }
+
+        /* ============================================
+           COMMENT SYSTEM STYLES
+           ============================================ */
+
+        /* Comments Section Container */
+        .comments-section {
+            margin-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+
+        /* Comments Header with Toggle Button */
+        .comments-header {
+            margin-bottom: 10px;
+        }
+
+        .comments-toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--white);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .comments-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .comments-toggle-btn:active {
+            transform: translateY(0);
+        }
+
+        .comments-toggle-btn .comment-icon {
+            font-size: 1.1rem;
+        }
+
+        .comments-toggle-btn .comment-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .comments-toggle-btn .comment-label {
+            flex: 1;
+            text-align: left;
+            margin-left: 5px;
+        }
+
+        .comments-toggle-btn .toggle-arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* Comments Container */
+        .comments-container {
+            margin-top: 15px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                max-height: 1000px;
+                transform: translateY(0);
+            }
+        }
+
+        /* Comments List */
+        .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+
+        /* Custom scrollbar for comments list */
+        .comments-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .comments-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .comments-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        .comments-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Individual Comment Item */
+        .comment-item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .comment-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .comment-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Comment Header */
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comment-username {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .comment-username.anonymous {
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .comment-user-icon {
+            font-size: 0.9rem;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comment-date {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+        }
+
+        .comment-delete-btn,
+        .comment-report-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .comment-delete-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .comment-report-btn:hover {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+
+        /* Comment Text */
+        .comment-text {
+            font-size: 0.9rem;
+            color: var(--white);
+            line-height: 1.4;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Comment Input Section */
+        .comment-input-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+
+        .comment-input-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .comment-input-container:focus-within {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .comment-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--white);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            resize: vertical;
+            min-height: 40px;
+            max-height: 120px;
+            outline: none;
+            padding: 0;
+        }
+
+        .comment-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .comment-input:focus::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Comment Input Footer */
+        .comment-input-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            gap: 15px;
+        }
+
+        .comment-char-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .comment-input-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Anonymous Toggle Switch */
+        .comment-type-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle-switch input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .toggle-slider {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: #7c3aed;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(16px);
+        }
+
+        .toggle-switch:hover .toggle-slider {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .toggle-switch input:checked:hover + .toggle-slider {
+            background: #8b5cf6;
+        }
+
+        .toggle-label {
+            font-weight: 500;
+            user-select: none;
+        }
+
+        /* Comment Submit Button */
+        .comment-submit-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .comment-submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .comment-submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .comment-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .comment-submit-btn .btn-icon {
+            font-size: 1rem;
+        }
+
+        /* Loading and Empty States for Comments */
+        .comments-loading,
+        .no-comments,
+        .comments-error {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comments-loading .loading-icon {
+            font-size: 1.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        .no-comments .no-comments-icon {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        .comments-error .error-icon {
+            font-size: 1.5rem;
+            color: #ff6b6b;
+        }
+
+        /* Responsive Design for Comments */
+        @media (max-width: 768px) {
+            .comments-section {
+                margin-top: 12px;
+                padding-top: 12px;
+            }
+
+            .comments-toggle-btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+
+            .comments-toggle-btn .comment-count {
+                padding: 1px 6px;
+                font-size: 0.75rem;
+            }
+
+            .comment-item {
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .comment-actions {
+                align-self: flex-end;
+                gap: 6px;
+            }
+
+            .comment-username {
+                font-size: 0.8rem;
+            }
+
+            .comment-date {
+                font-size: 0.7rem;
+            }
+
+            .comment-text {
+                font-size: 0.85rem;
+            }
+
+            .comment-input-container {
+                padding: 10px;
+            }
+
+            .comment-input {
+                font-size: 0.85rem;
+            }
+
+            .comment-input-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .comment-input-buttons {
+                justify-content: space-between;
+            }
+
+            .comment-submit-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .comments-toggle-btn {
+                padding: 5px 10px;
+                font-size: 0.8rem;
+            }
+
+            .comment-item {
+                padding: 8px;
+            }
+
+            .comment-input-container {
+                padding: 8px;
+            }
+
+            .toggle-switch {
+                font-size: 0.75rem;
+            }
+
+            .toggle-slider {
+                width: 32px;
+                height: 18px;
+            }
+
+            .toggle-slider:before {
+                width: 14px;
+                height: 14px;
+            }
+
+            .toggle-switch input:checked + .toggle-slider:before {
+                transform: translateX(14px);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Custom Message Element -->
+    <div id="customMessage" class="custom-message"></div>
+
     <!-- Animated Background Elements (Same as other pages) -->
     <div class="bg-animation">
         <div class="floating-shape shape1"></div>
@@ -1383,7 +1896,7 @@
             loadFeedbacks();
         }
 
-        // Function to load feedbacks from database
+        // Function to load feedbacks from database (optimized)
         async function loadFeedbacks() {
             const container = document.getElementById('feedbacksContainer');
             
@@ -1396,10 +1909,37 @@
             `;
             
             // Check if DatabaseHelper is available
-            if (window.DatabaseHelper && window.DatabaseHelper.getAllFeedbacks) {
-                console.log('🔍 Attempting to fetch feedbacks from database...');
+            if (window.DatabaseHelper && window.DatabaseHelper.getAllFeedbacksWithComments) {
+                console.log('🔍 Attempting to fetch feedbacks with comments from database...');
                 
-                // Try to get all feedbacks
+                // Use the optimized function that gets feedbacks with comment counts in one query
+                const result = await window.DatabaseHelper.getAllFeedbacksWithComments();
+                
+                if (result.success && result.feedbacks && result.feedbacks.length > 0) {
+                    console.log(`✅ Displaying ${result.feedbacks.length} feedbacks with comment counts`);
+                    displayFeedbacks(result.feedbacks);
+                } else if (result.success && (!result.feedbacks || result.feedbacks.length === 0)) {
+                    console.log('📢 No feedbacks found in database');
+                    container.innerHTML = `
+                        <div class="empty-message">
+                            <span class="empty-icon">📢</span>
+                            <span>No feedbacks yet</span>
+                            <span style="font-size: 0.9rem; opacity: 0.8;">Be the first to share your thoughts!</span>
+                        </div>
+                    `;
+                } else {
+                    console.error('❌ Failed to load feedbacks:', result.error);
+                    container.innerHTML = `
+                        <div class="empty-message">
+                            <span class="empty-icon">⚠️</span>
+                            <span>Failed to load feedbacks</span>
+                            <span style="font-size: 0.9rem; opacity: 0.8;">${result.error || 'Please try again later'}</span>
+                        </div>
+                    `;
+                }
+            } else if (window.DatabaseHelper && window.DatabaseHelper.getAllFeedbacks) {
+                console.log('🔍 Using fallback method...');
+                // Fallback to original method
                 const result = await window.DatabaseHelper.getAllFeedbacks();
                 
                 if (result.success && result.feedbacks && result.feedbacks.length > 0) {
@@ -1462,13 +2002,14 @@
             });
         }
 
-        // Function to create a feedback card
+        // Function to create a feedback card (optimized)
         function createFeedbackCard(feedback) {
             const card = document.createElement('div');
             card.className = 'feedback-card';
             card.style.opacity = '0';
             card.style.transform = 'translateY(20px)';
             card.style.transition = 'all 0.5s ease';
+            card.setAttribute('data-feedback-id', feedback.id);
             
             // Use submission_time if available, otherwise fall back to created_at
             const timeField = feedback.submission_time || feedback.created_at || new Date().toISOString();
@@ -1491,6 +2032,9 @@
             const userIcon = feedback.is_anonymous ? '🎭' : '👤';
             const usernameClass = feedback.is_anonymous ? 'feedback-username anonymous' : 'feedback-username';
             
+            // Use pre-loaded comment count if available
+            const commentCount = feedback.comment_count || 0;
+            
             card.innerHTML = `
                 <div class="feedback-header">
                     <div class="${usernameClass}">
@@ -1509,7 +2053,64 @@
                 <div class="feedback-text">
                     ${feedback.feedback_text}
                 </div>
+                
+                <!-- Comments Section -->
+                <div class="comments-section">
+                    <div class="comments-header">
+                        <button class="comments-toggle-btn" onclick="toggleComments('${feedback.id}')">
+                            <span class="comment-icon">💬</span>
+                            <span class="comment-count" id="count-${feedback.id}">${commentCount}</span>
+                            <span class="comment-label">Comments</span>
+                            <span class="toggle-arrow" id="arrow-${feedback.id}">▼</span>
+                        </button>
+                    </div>
+                    
+                    <div class="comments-container" id="comments-${feedback.id}" style="display: none;">
+                        <div class="comments-list" id="comments-list-${feedback.id}">
+                            <!-- Comments will be loaded here -->
+                        </div>
+                        
+                        <div class="comment-input-section">
+                            <div class="comment-input-container">
+                                <textarea 
+                                    class="comment-input" 
+                                    id="comment-input-${feedback.id}"
+                                    placeholder="Add a comment (max 500 characters)..."
+                                    maxlength="500"
+                                    rows="2"
+                                ></textarea>
+                                <div class="comment-input-footer">
+                                    <div class="comment-char-count">
+                                        <span id="char-count-${feedback.id}">0</span>/500
+                                    </div>
+                                    <div class="comment-input-buttons">
+                                        <div class="comment-type-toggle">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" class="anonymous-toggle" id="anon-toggle-${feedback.id}">
+                                                <span class="toggle-slider"></span>
+                                                <span class="toggle-label">Anonymous</span>
+                                            </label>
+                                        </div>
+                                        <button 
+                                            class="comment-submit-btn" 
+                                            onclick="submitComment('${feedback.id}')"
+                                            disabled
+                                        >
+                                            <span class="btn-icon">📝</span>
+                                            <span class="btn-text">Post</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             `;
+            
+            // Only setup comment input listeners (no need to load count separately)
+            setTimeout(() => {
+                setupCommentInputListeners(feedback.id);
+            }, 100);
             
             return card;
         }
@@ -1596,6 +2197,339 @@
                 }
             } else {
                 showCustomMessage('Unable to report feedback. Database connection required.', 'error');
+            }
+        }
+
+        // ============================================
+        // COMMENT SYSTEM FUNCTIONS (OPTIMIZED)
+        // ============================================
+
+        // Cache for loaded comments to avoid re-fetching
+        const commentsCache = new Map();
+
+        // Function to toggle comments visibility
+        async function toggleComments(feedbackId) {
+            const commentsContainer = document.getElementById(`comments-${feedbackId}`);
+            const arrow = document.getElementById(`arrow-${feedbackId}`);
+            const isVisible = commentsContainer.style.display !== 'none';
+            
+            if (isVisible) {
+                // Hide comments
+                commentsContainer.style.display = 'none';
+                arrow.textContent = '▼';
+            } else {
+                // Show comments
+                commentsContainer.style.display = 'block';
+                arrow.textContent = '▲';
+                
+                // Load comments only if not cached
+                if (!commentsCache.has(feedbackId)) {
+                    await loadComments(feedbackId);
+                }
+            }
+        }
+
+        // Function to load comment count for a feedback
+        async function loadCommentCount(feedbackId) {
+            if (window.DatabaseHelper && window.DatabaseHelper.getCommentCount) {
+                const count = await window.DatabaseHelper.getCommentCount(feedbackId);
+                const countElement = document.getElementById(`count-${feedbackId}`);
+                if (countElement) {
+                    countElement.textContent = count;
+                }
+            }
+        }
+
+        // Function to load comments for a feedback (optimized)
+        async function loadComments(feedbackId) {
+            const commentsList = document.getElementById(`comments-list-${feedbackId}`);
+            
+            if (!commentsList) return;
+            
+            // Check cache first
+            if (commentsCache.has(feedbackId)) {
+                const cachedComments = commentsCache.get(feedbackId);
+                displayComments(feedbackId, cachedComments);
+                return;
+            }
+            
+            // Show loading state
+            commentsList.innerHTML = `
+                <div class="comments-loading">
+                    <span class="loading-icon">🔄</span>
+                    <span>Loading comments...</span>
+                </div>
+            `;
+            
+            if (window.DatabaseHelper && window.DatabaseHelper.getCommentsForFeedback) {
+                const result = await window.DatabaseHelper.getCommentsForFeedback(feedbackId);
+                
+                if (result.success && result.comments) {
+                    // Cache the results
+                    commentsCache.set(feedbackId, result.comments);
+                    
+                    if (result.comments.length > 0) {
+                        displayComments(feedbackId, result.comments);
+                    } else {
+                        commentsList.innerHTML = `
+                            <div class="no-comments">
+                                <span class="no-comments-icon">💭</span>
+                                <span>No comments yet. Be the first to comment!</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    commentsList.innerHTML = `
+                        <div class="comments-error">
+                            <span class="error-icon">⚠️</span>
+                            <span>Failed to load comments</span>
+                        </div>
+                    `;
+                }
+            } else {
+                commentsList.innerHTML = `
+                    <div class="comments-error">
+                        <span class="error-icon">⚠️</span>
+                        <span>Comments unavailable</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to display comments
+        function displayComments(feedbackId, comments) {
+            const commentsList = document.getElementById(`comments-list-${feedbackId}`);
+            if (!commentsList) return;
+            
+            commentsList.innerHTML = '';
+            
+            comments.forEach((comment, index) => {
+                const commentElement = createCommentElement(comment);
+                commentsList.appendChild(commentElement);
+                
+                // Stagger animation
+                setTimeout(() => {
+                    commentElement.style.opacity = '1';
+                    commentElement.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        }
+
+        // Function to create a comment element
+        function createCommentElement(comment) {
+            const commentDiv = document.createElement('div');
+            commentDiv.className = 'comment-item';
+            commentDiv.style.opacity = '0';
+            commentDiv.style.transform = 'translateY(10px)';
+            commentDiv.style.transition = 'all 0.3s ease';
+            
+            const date = new Date(comment.created_at);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            });
+            const formattedTime = date.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+            
+            const userIcon = comment.is_anonymous ? '🎭' : '👤';
+            const usernameClass = comment.is_anonymous ? 'comment-username anonymous' : 'comment-username';
+            
+            // Check if current user owns this comment
+            const currentUser = window.currentUser || sessionStorage.getItem('currentUsername');
+            const isOwner = currentUser && (comment.username === currentUser || 
+                            (comment.is_anonymous && comment.username === 'Anonymous' && currentUser));
+            
+            console.log('👤 Comment owner check:', {
+                commentUsername: comment.username,
+                currentUser: currentUser,
+                isAnonymous: comment.is_anonymous,
+                isOwner: isOwner
+            });
+            
+            commentDiv.innerHTML = `
+                <div class="comment-header">
+                    <div class="${usernameClass}">
+                        <span class="comment-user-icon">${userIcon}</span>
+                        <span class="comment-user-name">${comment.username}</span>
+                    </div>
+                    <div class="comment-actions">
+                        <span class="comment-date">${formattedDate} ${formattedTime}</span>
+                        ${isOwner ? `<button class="comment-delete-btn" onclick="deleteComment('${comment.id}', '${comment.feedback_id}')" title="Delete comment">🗑️</button>` : ''}
+                        <button class="comment-report-btn" onclick="reportComment('${comment.id}')" title="Report comment">⚠️</button>
+                    </div>
+                </div>
+                <div class="comment-text">
+                    ${comment.comment_text}
+                </div>
+            `;
+            
+            return commentDiv;
+        }
+
+        // Function to setup comment input listeners
+        function setupCommentInputListeners(feedbackId) {
+            const textarea = document.getElementById(`comment-input-${feedbackId}`);
+            const charCount = document.getElementById(`char-count-${feedbackId}`);
+            const submitBtn = document.querySelector(`#comments-${feedbackId} .comment-submit-btn`);
+            
+            if (!textarea || !charCount || !submitBtn) return;
+            
+            textarea.addEventListener('input', function() {
+                const length = this.value.length;
+                charCount.textContent = length;
+                
+                // Enable/disable submit button
+                const isEmpty = this.value.trim().length === 0;
+                submitBtn.disabled = isEmpty;
+                
+                // Update character count color
+                if (length > 450) {
+                    charCount.style.color = '#ff4757';
+                } else if (length > 400) {
+                    charCount.style.color = '#ffa502';
+                } else {
+                    charCount.style.color = 'var(--text-secondary)';
+                }
+            });
+            
+            // Handle Enter key (Shift+Enter for new line, Enter to submit)
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!submitBtn.disabled) {
+                        submitComment(feedbackId);
+                    }
+                }
+            });
+        }
+
+        // Function to submit a comment
+        async function submitComment(feedbackId) {
+            const textarea = document.getElementById(`comment-input-${feedbackId}`);
+            const anonymousToggle = document.getElementById(`anon-toggle-${feedbackId}`);
+            const submitBtn = document.querySelector(`#comments-${feedbackId} .comment-submit-btn`);
+            
+            if (!textarea || !anonymousToggle || !submitBtn) {
+                showCustomMessage('Comment form not found', 'error');
+                return;
+            }
+            
+            const commentText = textarea.value.trim();
+            if (!commentText) {
+                showCustomMessage('Please enter a comment', 'warning');
+                return;
+            }
+            
+            // Get current user
+            const currentUser = window.currentUser || sessionStorage.getItem('currentUsername');
+            if (!currentUser || currentUser === 'Guest') {
+                showCustomMessage('Please log in to comment', 'warning');
+                return;
+            }
+            
+            // Disable submit button and show loading
+            submitBtn.disabled = true;
+            const originalText = submitBtn.querySelector('.btn-text').textContent;
+            submitBtn.querySelector('.btn-text').textContent = 'Posting...';
+            submitBtn.querySelector('.btn-icon').textContent = '⏳';
+            
+            try {
+                if (window.DatabaseHelper && window.DatabaseHelper.submitComment) {
+                    const commentData = {
+                        feedbackId: feedbackId,
+                        username: anonymousToggle.checked ? 'Anonymous' : currentUser,
+                        text: commentText,
+                        isAnonymous: anonymousToggle.checked
+                    };
+                    
+                    const result = await window.DatabaseHelper.submitComment(commentData);
+                    
+                    if (result.success) {
+                        showCustomMessage('Comment posted successfully!', 'success');
+                        
+                        // Clear the textarea
+                        textarea.value = '';
+                        document.getElementById(`char-count-${feedbackId}`).textContent = '0';
+                        anonymousToggle.checked = false;
+                        
+                        // Clear cache and reload comments and update count
+                        commentsCache.delete(feedbackId);
+                        await loadComments(feedbackId);
+                        await loadCommentCount(feedbackId);
+                    } else {
+                        showCustomMessage(result.error || 'Failed to post comment', 'error');
+                    }
+                } else {
+                    showCustomMessage('Comment system unavailable', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error submitting comment:', error);
+                showCustomMessage('Failed to post comment', 'error');
+            } finally {
+                // Restore submit button
+                submitBtn.querySelector('.btn-text').textContent = originalText;
+                submitBtn.querySelector('.btn-icon').textContent = '📝';
+                submitBtn.disabled = commentText.trim().length === 0;
+            }
+        }
+
+        // Function to report a comment
+        async function reportComment(commentId) {
+            const confirmed = await showCustomConfirmation('Are you sure you want to report this comment?');
+            if (!confirmed) return;
+            
+            if (window.DatabaseHelper && window.DatabaseHelper.reportComment) {
+                const result = await window.DatabaseHelper.reportComment(commentId);
+                if (result.success) {
+                    showCustomMessage('Comment reported successfully', 'success');
+                } else {
+                    showCustomMessage('Failed to report comment', 'error');
+                }
+            } else {
+                showCustomMessage('Unable to report comment', 'error');
+            }
+        }
+
+        // Function to delete a comment
+        async function deleteComment(commentId, feedbackId) {
+            console.log('🗑️ Delete comment requested:', commentId);
+            
+            const confirmed = await showCustomConfirmation('Are you sure you want to delete this comment?');
+            if (!confirmed) return;
+            
+            const currentUser = window.currentUser || sessionStorage.getItem('currentUsername');
+            if (!currentUser || currentUser === 'Guest') {
+                showCustomMessage('Please log in to delete comments', 'warning');
+                return;
+            }
+            
+            console.log('👤 Current user for delete:', currentUser);
+            
+            if (window.DatabaseHelper && window.DatabaseHelper.deleteComment) {
+                try {
+                    const result = await window.DatabaseHelper.deleteComment(commentId, currentUser);
+                    console.log('📝 Delete result:', result);
+                    
+                    if (result.success) {
+                        showCustomMessage('Comment deleted successfully', 'success');
+                        
+                        // Clear cache and reload comments and update count
+                        commentsCache.delete(feedbackId);
+                        await loadComments(feedbackId);
+                        await loadCommentCount(feedbackId);
+                    } else {
+                        console.error('❌ Delete failed:', result.error);
+                        showCustomMessage(result.error || 'Failed to delete comment', 'error');
+                    }
+                } catch (error) {
+                    console.error('❌ Delete error:', error);
+                    showCustomMessage('An error occurred while deleting the comment', 'error');
+                }
+            } else {
+                showCustomMessage('Unable to delete comment - database helper not available', 'error');
             }
         }
 
