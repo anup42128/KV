@@ -921,6 +921,9 @@
         /* Comments Header with Toggle Button */
         .comments-header {
             margin-bottom: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .comments-toggle-btn {
@@ -937,8 +940,29 @@
             font-family: 'Poppins', sans-serif;
             font-size: 0.9rem;
             font-weight: 500;
-            width: 100%;
+            flex: 1;
             justify-content: space-between;
+        }
+
+        .comments-refresh-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 0.9rem;
+        }
+
+        .comments-refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: rotate(180deg);
         }
 
         .comments-toggle-btn:hover {
@@ -1985,10 +2009,12 @@
             }
         }
 
-        // Function to display feedbacks
+        // Function to display feedbacks (improved with debugging)
         function displayFeedbacks(feedbacks) {
             const container = document.getElementById('feedbacksContainer');
             container.innerHTML = '';
+            
+            console.log(`📝 Displaying ${feedbacks.length} feedbacks`);
             
             feedbacks.forEach((feedback, index) => {
                 const card = createFeedbackCard(feedback);
@@ -2000,6 +2026,35 @@
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
             });
+            
+            // Add a global refresh button for debugging
+            if (feedbacks.length > 0) {
+                const globalRefreshBtn = document.createElement('div');
+                globalRefreshBtn.innerHTML = `
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button onclick="globalRefreshComments()" style="
+                            background: rgba(255, 255, 255, 0.1);
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 20px;
+                            padding: 8px 16px;
+                            color: white;
+                            cursor: pointer;
+                            font-family: 'Poppins', sans-serif;
+                            font-size: 0.85rem;
+                        ">
+                            🔄 Refresh All Comments
+                        </button>
+                    </div>
+                `;
+                container.appendChild(globalRefreshBtn);
+            }
+        }
+
+        // Global function to refresh all comments
+        function globalRefreshComments() {
+            console.log('🔄 Global comment refresh requested');
+            invalidateCache(); // Clear all cache
+            showCustomMessage('All comment caches cleared! Expand comments to see fresh data.', 'success');
         }
 
         // Function to create a feedback card (optimized)
@@ -2062,6 +2117,9 @@
                             <span class="comment-count" id="count-${feedback.id}">${commentCount}</span>
                             <span class="comment-label">Comments</span>
                             <span class="toggle-arrow" id="arrow-${feedback.id}">▼</span>
+                        </button>
+                        <button class="comments-refresh-btn" onclick="refreshComments('${feedback.id}')" title="Refresh comments" style="display: none;" id="refresh-btn-${feedback.id}">
+                            <span class="refresh-icon">🔄</span>
                         </button>
                     </div>
                     
@@ -2201,55 +2259,105 @@
         }
 
         // ============================================
-        // COMMENT SYSTEM FUNCTIONS (OPTIMIZED)
+        // COMMENT SYSTEM FUNCTIONS (FIXED CACHING)
         // ============================================
 
-        // Cache for loaded comments to avoid re-fetching
+        // Cache for loaded comments with timestamp tracking
         const commentsCache = new Map();
+        const CACHE_EXPIRY_TIME = 30000; // 30 seconds
+
+        // Function to check if cache is valid
+        function isCacheValid(feedbackId) {
+            if (!commentsCache.has(feedbackId)) return false;
+            
+            const cacheData = commentsCache.get(feedbackId);
+            const now = Date.now();
+            return (now - cacheData.timestamp) < CACHE_EXPIRY_TIME;
+        }
+
+        // Function to set cache with timestamp
+        function setCacheData(feedbackId, comments) {
+            commentsCache.set(feedbackId, {
+                comments: comments,
+                timestamp: Date.now()
+            });
+        }
+
+        // Function to force refresh cache
+        function invalidateCache(feedbackId = null) {
+            if (feedbackId) {
+                commentsCache.delete(feedbackId);
+                console.log(`🗋 Cache invalidated for feedback: ${feedbackId}`);
+            } else {
+                commentsCache.clear();
+                console.log('🗋 All cache cleared');
+            }
+        }
 
         // Function to toggle comments visibility
         async function toggleComments(feedbackId) {
             const commentsContainer = document.getElementById(`comments-${feedbackId}`);
             const arrow = document.getElementById(`arrow-${feedbackId}`);
+            const refreshBtn = document.getElementById(`refresh-btn-${feedbackId}`);
             const isVisible = commentsContainer.style.display !== 'none';
             
             if (isVisible) {
                 // Hide comments
                 commentsContainer.style.display = 'none';
                 arrow.textContent = '▼';
+                if (refreshBtn) refreshBtn.style.display = 'none';
             } else {
                 // Show comments
                 commentsContainer.style.display = 'block';
                 arrow.textContent = '▲';
+                if (refreshBtn) refreshBtn.style.display = 'inline-block';
                 
-                // Load comments only if not cached
-                if (!commentsCache.has(feedbackId)) {
-                    await loadComments(feedbackId);
-                }
+                // Always load fresh comments when expanding
+                await loadComments(feedbackId, true);
             }
         }
 
-        // Function to load comment count for a feedback
-        async function loadCommentCount(feedbackId) {
+        // Function to manually refresh comments
+        async function refreshComments(feedbackId) {
+            console.log(`🔄 Manually refreshing comments for ${feedbackId}`);
+            invalidateCache(feedbackId);
+            await loadCommentCount(feedbackId, true);
+            await loadComments(feedbackId, true);
+            showCustomMessage('Comments refreshed!', 'success');
+        }
+
+        // Function to load comment count for a feedback (improved)
+        async function loadCommentCount(feedbackId, forceRefresh = false) {
             if (window.DatabaseHelper && window.DatabaseHelper.getCommentCount) {
-                const count = await window.DatabaseHelper.getCommentCount(feedbackId);
-                const countElement = document.getElementById(`count-${feedbackId}`);
-                if (countElement) {
-                    countElement.textContent = count;
+                try {
+                    const count = await window.DatabaseHelper.getCommentCount(feedbackId);
+                    const countElement = document.getElementById(`count-${feedbackId}`);
+                    if (countElement) {
+                        countElement.textContent = count;
+                        console.log(`🔢 Updated comment count for ${feedbackId}: ${count}`);
+                    }
+                    
+                    // If count changes, invalidate cache to ensure fresh data
+                    if (forceRefresh) {
+                        invalidateCache(feedbackId);
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading comment count:', error);
                 }
             }
         }
 
-        // Function to load comments for a feedback (optimized)
-        async function loadComments(feedbackId) {
+        // Function to load comments for a feedback (fixed caching)
+        async function loadComments(feedbackId, forceRefresh = false) {
             const commentsList = document.getElementById(`comments-list-${feedbackId}`);
             
             if (!commentsList) return;
             
-            // Check cache first
-            if (commentsCache.has(feedbackId)) {
-                const cachedComments = commentsCache.get(feedbackId);
-                displayComments(feedbackId, cachedComments);
+            // Check cache first (unless force refresh)
+            if (!forceRefresh && isCacheValid(feedbackId)) {
+                const cacheData = commentsCache.get(feedbackId);
+                console.log(`💾 Using cached comments for ${feedbackId}`);
+                displayComments(feedbackId, cacheData.comments);
                 return;
             }
             
@@ -2261,28 +2369,44 @@
                 </div>
             `;
             
+            console.log(`🔄 Loading fresh comments for ${feedbackId}${forceRefresh ? ' (forced)' : ''}`);
+            
             if (window.DatabaseHelper && window.DatabaseHelper.getCommentsForFeedback) {
-                const result = await window.DatabaseHelper.getCommentsForFeedback(feedbackId);
-                
-                if (result.success && result.comments) {
-                    // Cache the results
-                    commentsCache.set(feedbackId, result.comments);
+                try {
+                    const result = await window.DatabaseHelper.getCommentsForFeedback(feedbackId);
                     
-                    if (result.comments.length > 0) {
-                        displayComments(feedbackId, result.comments);
+                    if (result.success && result.comments) {
+                        // Always cache the fresh results
+                        setCacheData(feedbackId, result.comments);
+                        
+                        if (result.comments.length > 0) {
+                            console.log(`✅ Loaded ${result.comments.length} comments for ${feedbackId}`);
+                            displayComments(feedbackId, result.comments);
+                        } else {
+                            commentsList.innerHTML = `
+                                <div class="no-comments">
+                                    <span class="no-comments-icon">💭</span>
+                                    <span>No comments yet. Be the first to comment!</span>
+                                </div>
+                            `;
+                        }
                     } else {
+                        console.error('❌ Failed to load comments:', result.error);
                         commentsList.innerHTML = `
-                            <div class="no-comments">
-                                <span class="no-comments-icon">💭</span>
-                                <span>No comments yet. Be the first to comment!</span>
+                            <div class="comments-error">
+                                <span class="error-icon">⚠️</span>
+                                <span>Failed to load comments</span>
+                                <button onclick="loadComments('${feedbackId}', true)" style="margin-top: 8px; padding: 4px 8px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; color: white; cursor: pointer;">Retry</button>
                             </div>
                         `;
                     }
-                } else {
+                } catch (error) {
+                    console.error('❌ Error loading comments:', error);
                     commentsList.innerHTML = `
                         <div class="comments-error">
                             <span class="error-icon">⚠️</span>
-                            <span>Failed to load comments</span>
+                            <span>Error loading comments</span>
+                            <button onclick="loadComments('${feedbackId}', true)" style="margin-top: 8px; padding: 4px 8px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; color: white; cursor: pointer;">Retry</button>
                         </div>
                     `;
                 }
@@ -2455,10 +2579,16 @@
                         document.getElementById(`char-count-${feedbackId}`).textContent = '0';
                         anonymousToggle.checked = false;
                         
-                        // Clear cache and reload comments and update count
-                        commentsCache.delete(feedbackId);
-                        await loadComments(feedbackId);
-                        await loadCommentCount(feedbackId);
+                        // Force refresh comments and update count
+                        console.log('🔄 Forcing comment refresh after successful post');
+                        invalidateCache(feedbackId);
+                        await loadCommentCount(feedbackId, true);
+                        
+                        // If comments are visible, reload them
+                        const commentsContainer = document.getElementById(`comments-${feedbackId}`);
+                        if (commentsContainer && commentsContainer.style.display === 'block') {
+                            await loadComments(feedbackId, true);
+                        }
                     } else {
                         showCustomMessage(result.error || 'Failed to post comment', 'error');
                     }
@@ -2516,10 +2646,16 @@
                     if (result.success) {
                         showCustomMessage('Comment deleted successfully', 'success');
                         
-                        // Clear cache and reload comments and update count
-                        commentsCache.delete(feedbackId);
-                        await loadComments(feedbackId);
-                        await loadCommentCount(feedbackId);
+                        // Force refresh comments and update count
+                        console.log('🔄 Forcing comment refresh after successful delete');
+                        invalidateCache(feedbackId);
+                        await loadCommentCount(feedbackId, true);
+                        
+                        // If comments are visible, reload them
+                        const commentsContainer = document.getElementById(`comments-${feedbackId}`);
+                        if (commentsContainer && commentsContainer.style.display === 'block') {
+                            await loadComments(feedbackId, true);
+                        }
                     } else {
                         console.error('❌ Delete failed:', result.error);
                         showCustomMessage(result.error || 'Failed to delete comment', 'error');
@@ -2533,7 +2669,7 @@
             }
         }
 
-        // Auto-refresh functions
+        // Auto-refresh functions (improved with cache handling)
         function toggleAutoRefresh() {
             autoRefreshEnabled = !autoRefreshEnabled;
             const statusElement = document.getElementById('autoRefreshStatus');
@@ -2557,10 +2693,12 @@
         function startAutoRefresh() {
             if (!autoRefreshEnabled) return;
             
-            // Simple refresh every 10 seconds - no detection, just pure refresh
+            // Clear all cache and refresh every 15 seconds
             autoRefreshInterval = setInterval(() => {
                 if (autoRefreshEnabled) {
-                    console.log('🔄 Auto-refresh: Refreshing page...');
+                    console.log('🔄 Auto-refresh: Clearing cache and refreshing page...');
+                    // Clear comment cache before refresh
+                    invalidateCache();
                     window.location.reload();
                 }
             }, 15000); // 15 seconds
