@@ -188,6 +188,7 @@
         .continue-btn.enabled {
             opacity: 1;
             pointer-events: auto;
+            animation: glow 2s ease-in-out infinite alternate;
         }
         
         .continue-btn.enabled:hover {
@@ -198,6 +199,60 @@
         .continue-btn:disabled {
             background: var(--gray-medium);
             cursor: not-allowed;
+        }
+        
+        /* Terms Agreement */
+        .terms-agreement {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .terms-checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .terms-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--secondary-blue);
+            cursor: pointer;
+        }
+        
+        .terms-label {
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            line-height: 1.5;
+        }
+        
+        .terms-link {
+            color: var(--secondary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .terms-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Glow Animation */
+        @keyframes glow {
+            from {
+                box-shadow: var(--shadow-medium), 0 0 5px rgba(59, 130, 246, 0.5);
+            }
+            to {
+                box-shadow: var(--shadow-heavy), 0 0 20px rgba(59, 130, 246, 0.8);
+            }
         }
         
         /* Responsive Design */
@@ -318,6 +373,16 @@
                 <!-- Instructions will be dynamically inserted here -->
             </div>
 
+            <!-- Terms Agreement -->
+            <div class="terms-agreement fade-in delay-2">
+                <div class="terms-checkbox-container">
+                    <input type="checkbox" id="termsCheckbox" class="terms-checkbox">
+                    <label for="termsCheckbox" class="terms-label">
+                        I have read and agree to the <a href="terms.html" target="_blank" class="terms-link">Terms and Conditions</a>
+                    </label>
+                </div>
+            </div>
+
             <!-- Continue Button -->
             <div class="continue-section fade-in delay-2">
                 <button id="continueBtn" class="continue-btn" disabled>
@@ -338,6 +403,7 @@
                 this.instructionsSection = document.getElementById('instructions');
                 this.continueBtn = document.getElementById('continueBtn');
                 this.welcomeTitle = document.getElementById('welcomeTitle');
+                this.termsCheckbox = document.getElementById('termsCheckbox');
                 
                 this.init();
             }
@@ -368,10 +434,18 @@
             setupStudentInterface() {
                 // Automatically show student instructions
                 this.showInstructions('student');
-                this.enableContinueButton();
             }
 
             setupEventListeners() {
+                // Terms checkbox event listener
+                this.termsCheckbox.addEventListener('change', () => {
+                    if (this.termsCheckbox.checked) {
+                        this.enableContinueButton();
+                    } else {
+                        this.disableContinueButton();
+                    }
+                });
+
                 // Continue button - redirects to feedbacks page
                 this.continueBtn.addEventListener('click', () => {
                     console.log('Continue button clicked - redirecting to feedbacks page');
@@ -387,8 +461,6 @@
                     }
                 });
             }
-
-            // Role selection method no longer needed for student-only interface
 
             showInstructions(role) {
                 const instructions = this.getInstructionsForRole(role);
@@ -437,6 +509,11 @@
                 this.continueBtn.disabled = false;
             }
 
+            disableContinueButton() {
+                this.continueBtn.classList.remove('enabled');
+                this.continueBtn.disabled = true;
+            }
+
             setupAnimations() {
                 // Add staggered animations
                 const animatedElements = document.querySelectorAll('.fade-in');
@@ -463,12 +540,41 @@
             (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
-
-        // Theme detection and application (if user has theme preference)
-        if (localStorage.getItem('theme') === 'dark' || 
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
     </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-school-info">
+                        <h3>Class Voice</h3>
+                        <p>Student Feedback Portal</p>
+                    </div>
+                    <p class="footer-description">
+                        Fostering excellence in education through open communication and continuous improvement.
+                    </p>
+                </div>
+                <div class="footer-right">
+                    <div class="contact-info">
+                        <h4>Contact Information</h4>
+                        <div class="contact-item">
+                            <span class="contact-icon">📧</span>
+                            <span>feedback@classvoice.edu</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">📍</span>
+                            <span>Educational Feedback Platform</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Class Voice. All rights reserved.</p>
+                <p class="credits">Educational Technology Solutions</p>
+                <p><a href="terms.html" style="color: var(--accent-orange); text-decoration: none;">Terms and Conditions</a></p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
