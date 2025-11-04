@@ -1534,6 +1534,14 @@
                         <div class="option-description">View feedbacks from everyone</div>
                     </div>
                 </button>
+                <!-- Individual Talking Button -->
+                <button class="option-btn" onclick="individualTalking()">
+                    <div class="option-icon">🗣️</div>
+                    <div class="option-content">
+                        <div class="option-title">Individual Talking</div>
+                        <div class="option-description">Start a private conversation with a specific user</div>
+                    </div>
+                </button>
                 <button class="option-btn" onclick="toggleAutoRefresh()">
                     <div class="option-icon">🔄</div>
                     <div class="option-content">
@@ -1912,6 +1920,264 @@
                     window.location.href = 'index.html';
                 }, 1500);
             }
+        }
+
+        // Function for Individual Talking feature
+        function individualTalking() {
+            console.log('🗣️ Individual Talking feature selected');
+            closeSettings();
+            // Redirect to the Individual Talking page
+            window.location.href = 'individual-talking.html';
+        }
+
+        // Function to handle All Feedbacks button click
+        function viewAllFeedbacks() {
+            console.log('💬 Viewing all feedbacks...');
+            loadFeedbacks();
+        }
+
+        // Function to load feedbacks from database (optimized)
+        async function loadFeedbacks() {
+            const container = document.getElementById('feedbacksContainer');
+            
+            // Show loading state
+            container.innerHTML = `
+                <div class="loading-message">
+                    <span class="loading-icon">🔄</span>
+                    <span>Loading feedbacks...</span>
+                </div>
+            `;
+            
+            // Check if DatabaseHelper is available
+            if (window.DatabaseHelper && window.DatabaseHelper.getAllFeedbacksWithComments) {
+                console.log('🔍 Attempting to fetch feedbacks with comments from database...');
+                
+                // Use the optimized function that gets feedbacks with comment counts in one query
+                const result = await window.DatabaseHelper.getAllFeedbacksWithComments();
+                
+                if (result.success && result.feedbacks && result.feedbacks.length > 0) {
+                    console.log(`✅ Displaying ${result.feedbacks.length} feedbacks with comment counts`);
+                    displayFeedbacks(result.feedbacks);
+                } else if (result.success && (!result.feedbacks || result.feedbacks.length === 0)) {
+                    console.log('📢 No feedbacks found in database');
+                    container.innerHTML = `
+                        <div class="empty-message">
+                            <span class="empty-icon">📢</span>
+                            <span>No feedbacks yet</span>
+                            <span style="font-size: 0.9rem; opacity: 0.8;">Be the first to share your thoughts!</span>
+                        </div>
+                    `;
+                } else {
+                    console.error('❌ Failed to load feedbacks:', result.error);
+                    container.innerHTML = `
+                        <div class="empty-message">
+                            <span class="empty-icon">⚠️</span>
+                            <span>Failed to load feedbacks</span>
+                            <span style="font-size: 0.9rem; opacity: 0.8;">${result.error || 'Please try again later'}</span>
+                        </div>
+                    `;
+                }
+            } else {
+                console.error('❌ DatabaseHelper is not available');
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <span class="empty-icon">⚠️</span>
+                        <span>DatabaseHelper is not available</span>
+                        <span style="font-size: 0.9rem; opacity: 0.8;">Please try again later</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to display feedbacks in the container
+        function displayFeedbacks(feedbacks) {
+            const container = document.getElementById('feedbacksContainer');
+            container.innerHTML = ''; // Clear existing content
+            
+            feedbacks.forEach(feedback => {
+                const feedbackElement = document.createElement('div');
+                feedbackElement.classList.add('feedback');
+                
+                feedbackElement.innerHTML = `
+                    <div class="feedback-header">
+                        <span class="feedback-author">${feedback.author}</span>
+                        <span class="feedback-date">${formatDate(feedback.date)}</span>
+                    </div>
+                    <div class="feedback-content">
+                        <p>${feedback.content}</p>
+                    </div>
+                    <div class="feedback-comments">
+                        <span class="comment-count">${feedback.commentCount || 0} comments</span>
+                        <button class="view-comments-btn" onclick="viewComments('${feedback.id}')">View Comments</button>
+                    </div>
+                `;
+                
+                container.appendChild(feedbackElement);
+            });
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        // Function to show comments for a feedback
+        function viewComments(feedbackId) {
+            console.log(`💬 Viewing comments for feedback ID: ${feedbackId}`);
+            closeSettings();
+            // Redirect to comments page with feedback ID
+            window.location.href = `comments.html?feedbackId=${encodeURIComponent(feedbackId)}`;
+        }
+
+        // Function to show custom message
+        function showCustomMessage(message, type) {
+            const messageContainer = document.getElementById('customMessageContainer');
+            messageContainer.innerHTML = `
+                <div class="custom-message ${type}">
+                    <span>${message}</span>
+                </div>
+            `;
+            messageContainer.style.display = 'block';
+            
+            // Hide message after 3 seconds
+            setTimeout(() => {
+                messageContainer.style.display = 'none';
+            }, 3000);
+        }
+
+        // Function to show custom confirmation dialog
+        function showCustomConfirmation(message) {
+            return new Promise((resolve) => {
+                const confirmationContainer = document.getElementById('confirmationContainer');
+                confirmationContainer.innerHTML = `
+                    <div class="confirmation-dialog">
+                        <span>${message}</span>
+                        <div class="confirmation-buttons">
+                            <button onclick="resolveConfirmation(true)">Yes</button>
+                            <button onclick="resolveConfirmation(false)">No</button>
+                        </div>
+                    </div>
+                `;
+                confirmationContainer.style.display = 'block';
+                
+                // Define resolveConfirmation function
+                window.resolveConfirmation = (confirmed) => {
+                    confirmationContainer.style.display = 'none';
+                    resolve(confirmed);
+                };
+            });
+        }
+
+        // Function to handle settings button click
+        function openSettings() {
+            console.log('🔧 Opening settings modal...');
+            const modal = document.getElementById('settingsModalOverlay');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        // Function to close the settings modal
+        function closeSettings() {
+            console.log('Closing settings modal...');
+            const modal = document.getElementById('settingsModalOverlay');
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        // Function to see your feedbacks
+        function seeYourFeedbacks() {
+            console.log('👤 Viewing your feedbacks...');
+            closeSettings();
+            
+            // Get current username
+            const username = window.currentUser || sessionStorage.getItem('currentUsername');
+            
+            if (username && username !== 'Guest') {
+                // Redirect to my-feedbacks page with username
+                window.location.href = `my-feedbacks.html?username=${encodeURIComponent(username)}`;
+            } else {
+                showCustomMessage('Please log in to view your feedbacks', 'warning');
+            }
+        }
+
+        // Function to show all feedbacks
+        function showAllFeedbacks() {
+            console.log('🌐 Viewing all feedbacks...');
+            closeSettings();
+            // Load and display all feedbacks
+            loadFeedbacks();
+        }
+
+        // Function to handle user logout
+        async function logoutUser() {
+            console.log('🚪 Logout requested...');
+            closeSettings();
+            
+            // Show confirmation dialog
+            const confirmed = await showCustomConfirmation('Are you sure you want to log out?');
+            if (!confirmed) {
+                return;
+            }
+            
+            console.log('🚪 Logging out user...');
+            
+            try {
+                // Use SessionManager if available
+                if (window.SessionManager) {
+                    // Try database logout first
+                    if (window.DatabaseHelper && window.DatabaseHelper.logout) {
+                        const user = window.SessionManager.getCurrentUser();
+                        if (user.sessionToken) {
+                            await window.DatabaseHelper.logout(user.sessionToken);
+                        }
+                    }
+                    
+                    // Clear session using SessionManager
+                    window.SessionManager.clearSession();
+                    
+                    // Show logout message
+                    showCustomMessage('Logged out successfully!', 'success');
+                    
+                    // Redirect to index.html
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    // Fallback to old method
+                    sessionStorage.removeItem('currentUsername');
+                    localStorage.removeItem('feedbackCooldownEnd');
+                    
+                    if (window.DatabaseHelper && window.DatabaseHelper.logout) {
+                        const sessionToken = sessionStorage.getItem('sessionToken');
+                        await window.DatabaseHelper.logout(sessionToken);
+                        sessionStorage.removeItem('sessionToken');
+                    }
+                    
+                    sessionStorage.clear();
+                    
+                    showCustomMessage('Logged out successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+                
+            } catch (error) {
+                console.error('❌ Logout error:', error);
+                // Still proceed with logout even if there's an error
+                showCustomMessage('Logged out (with some errors)', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            }
+        }
+
+        // Function for Individual Talking feature
+        function individualTalking() {
+            console.log('🗣️ Individual Talking feature selected');
+            closeSettings();
+            // Redirect to the Individual Talking page
+            window.location.href = 'individual-talking.html';
         }
 
         // Function to handle All Feedbacks button click
