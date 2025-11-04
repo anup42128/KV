@@ -26,6 +26,16 @@ function initializeSupabase() {
                 SUPABASE_CONFIG.apiKey
             );
             
+            // Set up auth state change listener
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('🔐 Auth state changed:', event);
+                if (session) {
+                    console.log('👤 User authenticated with Supabase:', session.user.id);
+                } else {
+                    console.log('🚪 User logged out from Supabase');
+                }
+            });
+            
             console.log('✅ Supabase client initialized successfully');
             console.log('🔗 Supabase URL:', SUPABASE_CONFIG.url);
             return true;
@@ -792,6 +802,206 @@ const DatabaseHelper = {
         } catch (error) {
             console.error('❌ Error deleting comment:', error);
             return { success: false, error: error.message };
+        }
+    },
+
+    // ============================================
+    // MESSAGING FUNCTIONS
+    // ============================================
+
+    // Send a private message
+    async sendMessage(messageData) {
+        try {
+            console.log('💬 Sending private message...');
+            
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized');
+                return { success: false, error: 'Database not ready' };
+            }
+
+            // Additional security check: Ensure sender_id matches current user
+            const currentUser = SessionManager.getCurrentUser();
+            if (!currentUser || !currentUser.username) {
+                return { success: false, error: 'User not authenticated. Please log in again.' };
+            }
+            
+            // Get current user ID from database to verify
+            const { data: user, error: userError } = await supabase
+                .from('users')
+                .select('id')
+                .eq('username', currentUser.username)
+                .single();
+                
+            if (userError || !user) {
+                console.error('❌ Error fetching current user:', userError);
+                return { success: false, error: 'Unable to verify user identity.' };
+            }
+            
+            // Verify that sender_id matches current user ID
+            if (messageData.senderId !== user.id) {
+                console.error('❌ Sender ID does not match current user ID');
+                return { success: false, error: 'Invalid sender. You can only send messages as yourself.' };
+            }
+
+            // Log the message data for debugging
+            console.log('📝 Message data:', messageData);
+            
+            const { data, error } = await supabase
+                .from('messages')
+                .insert([
+                    {
+                        sender_id: messageData.senderId,
+                        receiver_id: messageData.receiverId,
+                        content: messageData.content
+                    }
+                ])
+                .select()
+                .single();
+            
+            if (error) {
+                console.error('❌ Message sending failed:', error);
+                // Provide more detailed error information
+                let errorMessage = error.message;
+                if (error.code === '42501') {
+                    errorMessage = 'Permission denied. You may not have permission to send messages.';
+                } else if (error.code === '23503') {
+                    errorMessage = 'Invalid user ID. The sender or receiver may not exist.';
+                }
+                return {
+                    success: false,
+                    error: errorMessage
+                };
+            }
+            
+            console.log('✅ Message sent successfully');
+            return {
+                success: true,
+                data: data,
+                message: 'Message sent successfully!'
+            };
+            
+        } catch (error) {
+            console.error('❌ Message sending error:', error);
+            return {
+                success: false,
+                error: 'Failed to send message: ' + error.message
+            };
+        }
+    },
+
+    // Get messages between two users
+    async getMessagesBetweenUsers(userId1, userId2) {
+        try {
+            console.log(`💬 Fetching messages between users: ${userId1} and ${userId2}`);
+            
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized');
+                return { success: false, error: 'Database not ready', messages: [] };
+            }
+
+            const { data, error } = await supabase
+                .from('messages')
+                .select('*')
+                .or(`and(sender_id.eq.${userId1},receiver_id.eq.${userId2}),and(sender_id.eq.${userId2},receiver_id.eq.${userId1})`)
+                .order('created_at', { ascending: true });
+            
+            if (error) {
+                console.error('❌ Failed to fetch messages:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    messages: []
+                };
+            }
+            
+            console.log(`✅ Fetched ${data ? data.length : 0} messages`);
+            return {
+                success: true,
+                messages: data || []
+            };
+            
+        } catch (error) {
+            console.error('❌ Error fetching messages:', error);
+            return {
+                success: false,
+                error: 'Failed to load messages: ' + error.message,
+                messages: []
+            };
+        }
+    },
+
+    // Subscribe to real-time messages
+    subscribeToMessages(userId1, userId2, callback) {
+        try {
+            console.log(`📡 Subscribing to messages between users: ${userId1} and ${userId2}`);
+            
+            if (!supabase) {
+                console.error('❌ Supabase client not initialized');
+                return null;
+            }
+
+            // Create a unique channel name for this conversation
+            const channelName = `messages-${userId1}-${userId2}`;
+            console.log(`📡 Creating channel: ${channelName}`);
+            
+            // Create a channel for real-time updates
+            const channel = supabase
+                .channel(channelName)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'messages'
+                    },
+                    (payload) => {
+                        console.log('📥 New message payload received:', payload);
+                        // Check if this message is relevant to the current conversation
+                        const message = payload.new;
+                        console.log('📥 Checking message relevance:', { 
+                            messageSenderId: message.sender_id,
+                            messageReceiverId: message.receiver_id,
+                            userId1: userId1,
+                            userId2: userId2
+                        });
+                        
+                        if ((message.sender_id === userId1 && message.receiver_id === userId2) ||
+                            (message.sender_id === userId2 && message.receiver_id === userId1)) {
+                            console.log('📥 Message is relevant, calling callback');
+                            callback(message);
+                        } else {
+                            console.log('📥 Message is not relevant to current conversation, ignoring');
+                        }
+                    }
+                )
+                .subscribe((status, err) => {
+                    console.log('📡 Subscription status update:', { status, err });
+                    if (status === 'SUBSCRIBED') {
+                        console.log('✅ Successfully subscribed to messages');
+                    } else if (status === 'CHANNEL_ERROR') {
+                        console.error('❌ Channel error in message subscription:', err);
+                    } else if (status === 'CLOSED') {
+                        console.log('🔒 Message subscription channel closed');
+                    }
+                });
+
+            console.log('✅ Subscribed to messages');
+            return channel;
+        } catch (error) {
+            console.error('❌ Error subscribing to messages:', error);
+            return null;
+        }
+    },
+
+    // Unsubscribe from real-time messages
+    unsubscribeFromMessages(channel) {
+        try {
+            if (channel) {
+                supabase.removeChannel(channel);
+                console.log('✅ Unsubscribed from messages');
+            }
+        } catch (error) {
+            console.error('❌ Error unsubscribing from messages:', error);
         }
     }
 };
