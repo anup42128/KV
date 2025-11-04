@@ -64,24 +64,28 @@ CREATE INDEX IF NOT EXISTS idx_sessions_active ON user_sessions(is_active);
 
 CREATE TABLE IF NOT EXISTS feedback_submissions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    subject VARCHAR(100),
+    username VARCHAR(100) NOT NULL,
     feedback_text TEXT NOT NULL,
-    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-    feedback_type VARCHAR(50) DEFAULT 'general' CHECK (feedback_type IN ('class', 'teacher', 'facility', 'general', 'suggestion')),
+    character_count INTEGER,
     is_anonymous BOOLEAN DEFAULT false,
     is_approved BOOLEAN DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    is_reported BOOLEAN DEFAULT false,
+    report_count INTEGER DEFAULT 0,
     submission_date DATE DEFAULT CURRENT_DATE,
+    submission_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
     -- Constraints
-    CONSTRAINT feedback_text_length CHECK (LENGTH(feedback_text) >= 10)
+    CONSTRAINT feedback_text_not_empty CHECK (LENGTH(TRIM(feedback_text)) > 0),
+    CONSTRAINT feedback_text_max_length CHECK (LENGTH(feedback_text) <= 200),
+    CONSTRAINT character_count_check CHECK (character_count <= 200),
+    CONSTRAINT report_count_positive CHECK (report_count >= 0)
 );
 
 -- Create indexes for feedback
-CREATE INDEX IF NOT EXISTS idx_feedback_user_id ON feedback_submissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_feedback_username ON feedback_submissions(username);
 CREATE INDEX IF NOT EXISTS idx_feedback_date ON feedback_submissions(submission_date);
-CREATE INDEX IF NOT EXISTS idx_feedback_type ON feedback_submissions(feedback_type);
 CREATE INDEX IF NOT EXISTS idx_feedback_approved ON feedback_submissions(is_approved);
 
 -- =============================================
@@ -140,6 +144,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Drop existing triggers if they exist
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON user_profiles;
+
 -- Apply updated_at trigger to relevant tables
 CREATE TRIGGER update_users_updated_at 
     BEFORE UPDATE ON users 
@@ -159,6 +167,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Drop existing trigger if it exists
+DROP TRIGGER IF EXISTS create_profile_on_user_insert ON users;
 
 -- Trigger to create profile automatically
 CREATE TRIGGER create_profile_on_user_insert
@@ -191,6 +202,20 @@ ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own profile" ON users;
+DROP POLICY IF EXISTS "Users can update own profile" ON users;
+DROP POLICY IF EXISTS "Users can view own feedback" ON feedback_submissions;
+DROP POLICY IF EXISTS "Users can insert own feedback" ON feedback_submissions;
+DROP POLICY IF EXISTS "Users can update own feedback" ON feedback_submissions;
+DROP POLICY IF EXISTS "Users can view own user_profiles" ON user_profiles;
+DROP POLICY IF EXISTS "Users can update own user_profiles" ON user_profiles;
+DROP POLICY IF EXISTS "Users can view their messages" ON messages;
+DROP POLICY IF EXISTS "Users can insert their messages" ON messages;
+DROP POLICY IF EXISTS "Users can update their messages" ON messages;
+DROP POLICY IF EXISTS "Users can delete their messages" ON messages;
 
 -- RLS Policies for users table
 CREATE POLICY "Users can view own profile" ON users
@@ -201,13 +226,13 @@ CREATE POLICY "Users can update own profile" ON users
 
 -- RLS Policies for feedback_submissions table
 CREATE POLICY "Users can view own feedback" ON feedback_submissions
-    FOR SELECT USING (auth.uid()::text = user_id::text);
+    FOR SELECT USING (auth.uid()::text = (SELECT id::text FROM users WHERE username = feedback_submissions.username));
 
 CREATE POLICY "Users can insert own feedback" ON feedback_submissions
-    FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
+    FOR INSERT WITH CHECK (auth.uid()::text = (SELECT id::text FROM users WHERE username = feedback_submissions.username));
 
 CREATE POLICY "Users can update own feedback" ON feedback_submissions
-    FOR UPDATE USING (auth.uid()::text = user_id::text);
+    FOR UPDATE USING (auth.uid()::text = (SELECT id::text FROM users WHERE username = feedback_submissions.username));
 
 -- RLS Policies for user_profiles table
 CREATE POLICY "Users can view own user_profiles" ON user_profiles
@@ -215,6 +240,26 @@ CREATE POLICY "Users can view own user_profiles" ON user_profiles
 
 CREATE POLICY "Users can update own user_profiles" ON user_profiles
     FOR UPDATE USING (auth.uid()::text = user_id::text);
+
+-- RLS Policies for messages table
+-- Users can view messages they sent or received
+CREATE POLICY "Users can view their messages" ON messages
+    FOR SELECT USING (
+        auth.uid()::text = sender_id::text OR 
+        auth.uid()::text = receiver_id::text
+    );
+
+-- Users can insert messages they send
+CREATE POLICY "Users can insert their messages" ON messages
+    FOR INSERT WITH CHECK (auth.uid()::text = sender_id::text);
+
+-- Users can update their own messages (if needed)
+CREATE POLICY "Users can update their messages" ON messages
+    FOR UPDATE USING (auth.uid()::text = sender_id::text);
+
+-- Users can delete their own messages
+CREATE POLICY "Users can delete their messages" ON messages
+    FOR DELETE USING (auth.uid()::text = sender_id::text);
 
 -- =============================================
 -- 8. SAMPLE DATA (Optional - for testing)
@@ -252,11 +297,11 @@ SELECT
     u.user_type,
     u.class_section,
     COUNT(f.id) as total_feedback,
-    AVG(f.rating) as average_rating,
+    0 as average_rating,  -- Placeholder since rating column doesn't exist
     MAX(f.created_at) as last_feedback_date,
     u.created_at as joined_date
 FROM users u
-LEFT JOIN feedback_submissions f ON u.id = f.user_id
+LEFT JOIN feedback_submissions f ON u.username = f.username
 GROUP BY u.id, u.username, u.user_type, u.class_section, u.created_at;
 
 -- View for daily feedback summary
@@ -265,18 +310,48 @@ SELECT
     submission_date,
     COUNT(*) as total_feedback,
     COUNT(*) FILTER (WHERE is_approved = true) as approved_feedback,
-    AVG(rating) as average_rating,
-    COUNT(DISTINCT user_id) as unique_users
+    0 as average_rating,  -- Placeholder since rating column doesn't exist
+    COUNT(DISTINCT username) as unique_users
 FROM feedback_submissions
 GROUP BY submission_date
 ORDER BY submission_date DESC;
+
+-- =============================================
+-- 10. MESSAGES TABLE
+-- Stores private messages between users
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS messages (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    
+    -- Constraints
+    CONSTRAINT content_length CHECK (LENGTH(content) >= 1)
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_receiver_id ON messages(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_participants ON messages(sender_id, receiver_id);
+
+-- Enable Row Level Security
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+-- Note: RLS policies for messages table are defined in the main RLS policies section above
+-- to avoid duplication and ensure proper DROP/CREATE policy handling
+
+COMMENT ON TABLE messages IS 'Private messages between users';
 
 -- =============================================
 -- 10. MAINTENANCE PROCEDURES
 -- =============================================
 
 -- Create a function to get user statistics
-CREATE OR REPLACE FUNCTION get_user_dashboard_stats(p_user_id UUID)
+CREATE OR REPLACE FUNCTION get_user_dashboard_stats(p_username VARCHAR)
 RETURNS TABLE(
     feedback_count BIGINT,
     average_rating NUMERIC,
@@ -287,11 +362,11 @@ BEGIN
     RETURN QUERY
     SELECT 
         COUNT(f.id) as feedback_count,
-        ROUND(AVG(f.rating), 1) as average_rating,
+        0 as average_rating,  -- Placeholder since rating column doesn't exist
         COUNT(f.id) as total_views, -- Placeholder - implement view tracking separately
         7 as streak_days -- Placeholder - implement streak calculation
     FROM feedback_submissions f
-    WHERE f.user_id = p_user_id;
+    WHERE f.username = p_username;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -314,3 +389,4 @@ COMMENT ON TABLE user_sessions IS 'Active user sessions for security tracking';
 COMMENT ON TABLE feedback_submissions IS 'All feedback submitted by users';
 COMMENT ON TABLE user_profiles IS 'Extended user profile information and preferences';
 COMMENT ON TABLE audit_logs IS 'Security audit trail for important actions';
+COMMENT ON TABLE messages IS 'Private messages between users';
